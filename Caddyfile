@@ -1,0 +1,35 @@
+sonarr.domaine.fr {
+    reverse_proxy sonarr:8989
+}
+
+radarr.domaine.fr {
+    reverse_proxy radarr:7878
+}
+
+domaine.fr {
+    reverse_proxy seerr:5055
+}
+
+torrent.domaine.fr {
+    reverse_proxy gluetun:8080
+}
+
+prowlarr.domaine.fr {
+    reverse_proxy prowlarr:9696
+}
+
+jellyfin.domaine.fr {
+    reverse_proxy jellyfin:8096
+}
+
+docker.domaine.fr {
+    reverse_proxy portainer:9000
+}
+
+joal.domaine.fr {
+    reverse_proxy gluetun:9092
+}
+
+:80 {
+respond "Caddy fonctionne"
+}
