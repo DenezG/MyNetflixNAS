@@ -2,6 +2,7 @@
 
 Stack multimédia auto-hébergée tournant sur Ubuntu Server avec Docker.
 
+![alt text](image.png)
 ---
 
 ## Internet
