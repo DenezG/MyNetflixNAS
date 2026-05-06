@@ -11,23 +11,25 @@ Stack multimédia auto-hébergée tournant sur Ubuntu Server avec Docker.
 
 ## Internet
 
-Freebox Pop avec fibre, brancher directement à la box pour maximiser la connexion (900mbs en upload et 900mbs en download) avec un cable de catégorie 6. Faire une règle 20% seeding et 80% jeelyfin pour l'upload, donwload osef. Optimiser l'OS pour la connexion. 
+* Freebox Pop avec fibre, branchée directement à la box pour maximiser la connexion (900mbs en upload et 900mbs en download) avec un cable de catégorie 6. 
+* Faire une règle 20% seeding et 80% jeelyfin pour l'upload, donwload osef.
+* Optimiser l'OS pour la connexion. 
 
 ---
 
 ## Securité
 
-En France y'a l'arcom qui peut mettre une ammende même si c'est rare, ils vont regardé le peer2peer donc qbittorrent, il faut donc mettre un VPN devant qbittorrent osef de jellyfin.
-Le VPN doit supporter le portforward afin d'avoir un ratio sur les sites de torrents qui me permet de télécharger autant que je veux.
-Aussi niveau sécurité informatique pour mon réseau et pc, il faut sécuriser qbittorrent donc un très bon mdp pour qbittorrent vu que je l'expose et une authentification au niveua de Caddy.
-Ajouter fail2ban pour empêcher le brutforce de mes applications.
+* En France Il y a l'Arcom qui peut mettre une ammende même si c'est rare (Hadopi finit Mai 2026 mais peut revenir si ils trouvent un moyen de contourner la loi), ils vont regarder le peer2peer donc qbittorrent, il faut donc mettre un VPN devant qbittorrent osef de jellyfin.
+* Le VPN doit supporter le portforward afin que les autres utilisateurs se connectent facilement au port de notre qbittorrent
+* Aussi niveau sécurité informatique pour mon réseau et pc, il faut sécuriser qbittorrent avec un très bon mdp vu que je l'expose et une authentification au niveau de Caddy.
+* Ajouter fail2ban pour empêcher le brutforce de mes applications.
 
 
 ---
 
 ## Portainer et stacks
 
-Lancer depuis le server le docker-compose avec Portainer et Caddy, ensuite depuis docker.domaine.fr on peut facilement lancer les autres stacks grâce aux différents .yml etn ajoutant les fichers .env correspondants.
+Lancer depuis le server le docker-compose avec Portainer et Caddy, ensuite depuis docker.domaine.fr on peut facilement lancer les autres stacks grâce aux différents .yml en ajoutant les fichers .env correspondants.
 
 <img width="1767" height="380" alt="image" src="https://github.com/user-attachments/assets/50bd97b3-823b-409b-a685-f8d5fcb4e9b3" />
 
@@ -61,6 +63,9 @@ Un HP Prodesk mini serait idéale, il consomme peu et est plus adapté qu'un pc 
 | Radarr | https://radarr.domaine.fr | Gestion des films |
 | Prowlarr | https://prowlarr.domaine.fr | Gestion des indexeurs |
 | Qbittorrent | https://torrent.domaine.fr | Téléchargements |
+| Portainer | https://docker.domaine.fr | Gestion de Docker |
+| Kuma | https://status.domaine.fr | Infos ping de la stack |
+| Glance | https://home.domaine.fr | Dashboard de monitoring |
 
 ---
 
@@ -127,11 +132,13 @@ docker compose up -d
     ├── seerr/
     ├── qbittorrent/
     └── jellyfin/
+    etc...
 
 /mnt/media/
 ├── films/
 ├── series/
 ├── animes/
+├── music/
 └── downloads/
 ```
 
@@ -150,6 +157,9 @@ Enregistrements A à créer sur IONOS pointant vers l'IP publique :
 | `prowlarr` | A | `IP_PUBLIQUE` |
 | `seerr` | A | `IP_PUBLIQUE` |
 | `torrent` | A | `IP_PUBLIQUE` |
+| `music` | A | `IP_PUBLIQUE` |
+| 'status' | A | `IP_PUBLIQUE` |
+| 'home' | A | `IP_PUBLIQUE` |
 
 ---
 
