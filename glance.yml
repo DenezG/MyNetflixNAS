@@ -1,0 +1,555 @@
+theme:
+  background-color: 220 15 10
+  primary-color: 210 90 55
+  positive-color: 142 70 45
+  negative-color: 0 72 51
+  contrast-multiplier: 1.2
+
+server:
+  port: 3000
+
+pages:
+
+##################################################
+#                   PAGE HOME
+##################################################
+
+  - name: MyNetflixNAS
+    columns:
+
+      ##################################################
+      # COLONNE 1 - SMALL (Horloge / Calendrier / Météo)
+      ##################################################
+
+      - size: small
+        widgets:
+
+          - type: clock
+            hour-format: 24h
+            show-progress: true
+            timezones:
+              - timezone: Europe/Paris
+                label: Paris
+
+          - type: calendar
+
+          - type: weather
+            location: "${WEATHER_LOCATION}"
+            units: metric
+            show-hourly: true
+
+      ##################################################
+      # COLONNE 2 - FULL (Stats & Monitoring)
+      ##################################################
+
+      - size: full
+        widgets:
+
+          ##################################################
+          # Statut des services
+          ##################################################
+
+          - type: monitor
+            title: Statut NETFLIX
+            cache: 1m
+            sites:
+
+              - title: Seerr
+                url: http://seerr:5055
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/overseerr.svg
+
+              - title: Jellyfin
+                url: http://jellyfin:8096
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyfin.svg
+
+              - title: Sonarr
+                url: http://sonarr:8989
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sonarr.svg
+
+              - title: Radarr
+                url: http://radarr:7878
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/radarr.svg
+
+              - title: Prowlarr
+                url: http://prowlarr:9696
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/prowlarr.svg
+
+              - title: Navidrome
+                url: http://navidrome:4533
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/navidrome.svg
+
+              - title: Lidarr
+                url: http://lidarr:8686
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/lidarr.svg
+
+              - title: Portainer
+                url: http://portainer:9000
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/portainer.svg
+
+              - title: Caddy
+                url: http://caddy:2019
+                icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/caddy.svg
+
+          ##################################################
+          # Conteneurs Docker
+          ##################################################
+
+          - type: docker-containers
+
+          ##################################################
+          # Tendances Seerr
+          ##################################################
+
+          - type: custom-api
+            title: Tendances
+            title-url: http://seerr:5055/discover/trending
+            url: http://seerr:5055/api/v1/discover/trending
+            cache: 15m
+            headers:
+              accept: "application/json"
+              x-api-key: "${SEERR_API_KEY}"
+            parameters:
+              language: "fr"
+              page: "1"
+            options:
+              show-media-type: true
+              show-media-desc: true
+            template: |
+              {{ $showMediaType := .Options.BoolOr "show-media-type" true }}
+              {{ $showMediaDesc := .Options.BoolOr "show-media-desc" true }}
+              {{ if eq .Response.StatusCode 200 }}
+                {{ $items := .JSON.Array "results" }}
+                {{ if gt (len $items) 0 }}
+                  <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
+                  {{ range $items }}
+                    <li class="flex items-start gap-10 thumbnail-container thumbnail-parent">
+                      {{ $mediaType := .String "mediaType" }}
+                      {{ $mediaTitle := "" }}
+                      {{ $mediaTypeLabel := "" }}
+                      {{ if eq $mediaType "movie" }}
+                        {{ $mediaTitle = .String "title" }}
+                        {{ $mediaTypeLabel = "Film" }}
+                      {{ else }}
+                        {{ $mediaTitle = .String "name" }}
+                        {{ $mediaTypeLabel = "Série" }}
+                      {{ end }}
+                      {{ $seerrUrl := concat "http://seerr:5055/" $mediaType "/" (.String "id") }}
+                      {{ $tmdbUrl := concat "https://www.themoviedb.org/" $mediaType "/" (.String "id") }}
+                      <a href="{{ $seerrUrl }}" target="_blank">
+                        <img src="{{ concat "https://image.tmdb.org/t/p/w300" (.String "posterPath") }}"
+                          style="border-radius: 5px; min-width: 5rem; max-width: 5rem;" class="card">
+                      </a>
+                      <div class="flex-1" style="padding-right: 5px;">
+                        <p class="color-positive size-h4 text-truncate-2-lines margin-top-5">
+                          <a href="{{ $seerrUrl }}" target="_blank">{{ $mediaTitle }}</a>
+                        </p>
+                        <p class="size-h4">
+                          <a href="{{ $tmdbUrl }}" target="_blank">
+                            TMDB: {{ mul (.Float "voteAverage") 10 | toInt }}%
+                            {{ if $showMediaType }} | {{ $mediaTypeLabel }}{{ end }}
+                          </a>
+                        </p>
+                        {{ if $showMediaDesc }}
+                          <p class="color-subdue size-h4 text-truncate-2-lines">{{ .String "overview" }}</p>
+                        {{ end }}
+                      </div>
+                    </li>
+                  {{ end }}
+                  </ul>
+                {{ end }}
+              {{ end }}
+
+      ##################################################
+      # COLONNE 3 - SMALL (RSS Tech FR)
+      ##################################################
+
+      - size: small
+        widgets:
+
+          ##################################################
+          # RSS Tech français
+          ##################################################
+
+          - type: rss
+            title: Tech FR
+            limit: 15
+            collapse-after: 5
+            cache: 3h
+            feeds:
+              - url: https://www.igen.fr/rss/articles
+                title: "iGen"
+              - url: https://www.clubic.com/feed/article/
+                title: "Clubic"
+              - url: https://www.numerama.com/feed/
+                title: "Numerama"
+              - url: https://korben.info/feed
+                title: "Korben"
+              - url: https://www.nextinpact.com/rss/news.xml
+                title: "Next INpact"
+
+          ##################################################
+          # Bookmarks
+          ##################################################
+
+          - type: bookmarks
+            groups:
+
+              - title: LIENS
+                links:
+                  - title: Seerr
+                    url: https://domaine.fr
+                    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/overseerr.svg
+                  - title: Jellyfin
+                    url: https://jellyfin.domaine.fr
+                    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyfin.svg
+                  - title: Navidrome
+                    url: https://music.domaine.fr
+                    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/navidrome.svg
+
+              - title: Administration
+                links:
+                  - title: Sonarr
+                    url: https://sonarr.domaine.fr
+                    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sonarr.svg
+                  - title: Radarr
+                    url: https://radarr.domaine.fr
+                    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/radarr.svg
+                  - title: Prowlarr
+                    url: https://prowlarr.domaine.fr
+                    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/prowlarr.svg
+                  - title: Lidarr
+                    url: https://lidarr.domaine.fr
+                    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/lidarr.svg
+                  - title: qBittorrent
+                    url: https://torrent.domaine.fr
+                    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/qbittorrent.svg
+                  - title: JOAL
+                    url: https://joal.domaine.fr
+                    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/joal.svg
+                  - title: Portainer
+                    url: https://docker.domaine.fr
+                    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/portainer.svg
+
+              - title: Réseau
+                links:
+                  - title: Tailscale
+                    url: https://login.tailscale.com/admin/machines
+
+##################################################
+#              PAGE MEDIA
+##################################################
+
+  - name: Médias
+    columns:
+
+      ##################################################
+      # COLONNE 1 - SMALL (Sonarr récent)
+      ##################################################
+
+      - size: small
+        widgets:
+
+          - type: custom-api
+            title: Sonarr — Récents
+            title-url: http://sonarr:8989
+            cache: 30m
+            options:
+              service: sonarr
+              type: recent
+              size: small
+              collapse-after: 5
+              show-grabbed: false
+              interval: 30
+              api-base-url: http://sonarr:8989
+              key: "${SONARR_API_KEY}"
+              url: http://sonarr:8989/
+            template: |
+              {{ $collapseAfter := .Options.IntOr "collapse-after" 5 }}
+              {{ $showGrabbed := .Options.BoolOr "show-grabbed" false }}
+              {{ $sortTime := .Options.StringOr "sort-time" "desc" }}
+              {{ $size := .Options.StringOr "size" "medium" }}
+              {{ $service := .Options.StringOr "service" "" }}
+              {{ $type := .Options.StringOr "type" "" }}
+              {{ $intervalH := .Options.IntOr "interval" 0 | mul 24 }}
+              {{ $now := now | formatTime "2006-01-02T15:04:05" }}
+              {{ $negInterval := (offsetNow (printf "-%dh" $intervalH)) | formatTime "2006-01-02T15:04:05" }}
+              {{ $apiBaseUrl := .Options.StringOr "api-base-url" "" }}
+              {{ $key := .Options.StringOr "key" "" }}
+              {{ $url := .Options.StringOr "url" $apiBaseUrl }}
+              {{ $requestUrl := printf "%s/api/v3/history/since?includeSeries=true&includeEpisode=true&eventType=grabbed&date=%s" $apiBaseUrl $negInterval }}
+              {{ $data := newRequest $requestUrl | withHeader "Accept" "application/json" | withHeader "X-Api-Key" $key | getResponse }}
+              <ul class="list list-gap-14 collapsible-container single-line-titles" data-collapse-after="{{ $collapseAfter }}">
+                {{ $itemDisplayed := false }}
+                {{ range $data.JSON.Array "" | sortByTime "date" "rfc3339" $sortTime }}
+                  {{ $itemDisplayed = true }}
+                  {{ $coverUrl := printf "%s/api/v3/mediacover/%s/poster-500.jpg?apikey=%s" $apiBaseUrl (.String "seriesId") $key }}
+                  {{ $title := .String "series.title" }}
+                  {{ $subtitle := .String "episode.title" }}
+                  {{ $seString := printf "S%02dE%02d" (.Int "episode.seasonNumber") (.Int "episode.episodeNumber") }}
+                  {{ $date := .String "date" | parseLocalTime "RFC3339" }}
+                  {{ $date = $date.In now.Location }}
+                  {{ $link := printf "%s/series/%s#" $url (.String "series.titleSlug") }}
+                  {{ $height := "9rem" }}
+                  {{ $width := "6rem" }}
+                  <li style="position: relative;">
+                    <div class="flex gap-10 items-start thumbnail-container thumbnail-parent">
+                      <div>
+                        <div style="width: {{ $width }}; height: {{ $height }}; align-content: center;">
+                          <img class="thumbnail" src="{{ $coverUrl }}" loading="lazy"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;">
+                        </div>
+                      </div>
+                      <div class="shrink min-width-0" style="height: 9rem; position: relative; padding-top: 5px;">
+                        <strong class="size-h4 block text-truncate color-primary">{{ $title }}</strong>
+                        <div class="text-truncate text-very-compact">{{ $subtitle }}</div>
+                        <div class="text-very-compact">{{ $seString }} · {{ $date.Format "02/01 15:04" }}</div>
+                      </div>
+                    </div>
+                  </li>
+                {{ end }}
+                {{ if not $itemDisplayed }}<li>Aucun élément trouvé.</li>{{ end }}
+              </ul>
+
+          - type: custom-api
+            title: Radarr — Récents
+            title-url: http://radarr:7878
+            cache: 30m
+            options:
+              service: radarr
+              type: recent
+              size: small
+              collapse-after: 5
+              interval: 30
+              api-base-url: http://radarr:7878
+              key: "${RADARR_API_KEY}"
+              url: http://radarr:7878/
+            template: |
+              {{ $collapseAfter := .Options.IntOr "collapse-after" 5 }}
+              {{ $sortTime := .Options.StringOr "sort-time" "desc" }}
+              {{ $intervalH := .Options.IntOr "interval" 0 | mul 24 }}
+              {{ $negInterval := (offsetNow (printf "-%dh" $intervalH)) | formatTime "2006-01-02T15:04:05" }}
+              {{ $apiBaseUrl := .Options.StringOr "api-base-url" "" }}
+              {{ $key := .Options.StringOr "key" "" }}
+              {{ $url := .Options.StringOr "url" $apiBaseUrl }}
+              {{ $requestUrl := printf "%s/api/v3/history/since?includeMovie=true&eventType=grabbed&date=%s" $apiBaseUrl $negInterval }}
+              {{ $data := newRequest $requestUrl | withHeader "Accept" "application/json" | withHeader "X-Api-Key" $key | getResponse }}
+              <ul class="list list-gap-14 collapsible-container single-line-titles" data-collapse-after="{{ $collapseAfter }}">
+                {{ $itemDisplayed := false }}
+                {{ range $data.JSON.Array "" | sortByTime "date" "rfc3339" $sortTime }}
+                  {{ $itemDisplayed = true }}
+                  {{ $coverUrl := printf "%s/api/v3/mediacover/%s/poster-500.jpg?apikey=%s" $apiBaseUrl (.String "movie.id") $key }}
+                  {{ $title := .String "movie.title" }}
+                  {{ $date := .String "date" | parseLocalTime "RFC3339" }}
+                  {{ $date = $date.In now.Location }}
+                  {{ $link := printf "%s/movie/%s#" $url (.String "movie.titleSlug") }}
+                  <li style="position: relative;">
+                    <div class="flex gap-10 items-start thumbnail-container thumbnail-parent">
+                      <div style="width: 6rem; height: 9rem;">
+                        <img class="thumbnail" src="{{ $coverUrl }}" loading="lazy"
+                          style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;">
+                      </div>
+                      <div class="shrink min-width-0" style="height: 9rem; padding-top: 5px;">
+                        <strong class="size-h4 block text-truncate color-primary">{{ $title }}</strong>
+                        <div class="text-very-compact">Téléchargé le {{ $date.Format "02/01 15:04" }}</div>
+                      </div>
+                    </div>
+                  </li>
+                {{ end }}
+                {{ if not $itemDisplayed }}<li>Aucun élément trouvé.</li>{{ end }}
+              </ul>
+
+      ##################################################
+      # COLONNE 2 - FULL (Lecture en cours Jellyfin)
+      ##################################################
+
+      - size: full
+        widgets:
+
+          - type: custom-api
+            title: En cours de lecture
+            cache: 1m
+            options:
+              media-server: "jellyfin"
+              base-url: http://jellyfin:8096
+              api-key: "${JELLYFIN_API_KEY}"
+              small-column: false
+              compact: false
+              show-thumbnail: true
+              full-thumbnail: true
+              show-paused: true
+              show-progress-bar: true
+              show-progress-info: true
+              time-format: "15:04"
+            template: |
+              {{ $baseURL := .Options.StringOr "base-url" "" }}
+              {{ $apiKey := .Options.StringOr "api-key" "" }}
+              {{ $showThumbnail := .Options.BoolOr "show-thumbnail" true }}
+              {{ $showPaused := .Options.BoolOr "show-paused" false }}
+              {{ $showProgressBar := .Options.BoolOr "show-progress-bar" true }}
+              {{ $showProgressInfo := .Options.BoolOr "show-progress-info" true }}
+              {{ $timeFormat := .Options.StringOr "time-format" "15:04" }}
+              {{ $sessionsCall := newRequest (concat $baseURL "/Sessions")
+                | withParameter "api_key" $apiKey
+                | withParameter "activeWithinSeconds" "30"
+                | withHeader "Accept" "application/json"
+                | getResponse }}
+              {{ if eq $sessionsCall.Response.StatusCode 200 }}
+                {{ $sessions := $sessionsCall.JSON.Array "" }}
+                {{ $activeSessions := 0 }}
+                {{ range $sessions }}
+                  {{ if .Exists "NowPlayingItem" }}{{ $activeSessions = 1 }}{{ end }}
+                {{ end }}
+                {{ if eq $activeSessions 0 }}
+                  <p>Rien en cours de lecture.</p>
+                {{ else }}
+                  <style>
+                    .progress-container { height: 1rem; border: 1px solid var(--color-text-base); border-radius: var(--border-radius); overflow: hidden; }
+                    .progress-bar { height: 100%; background: var(--color-primary); border-radius: 3px; }
+                  </style>
+                  <div class="flex flex-column gap-10">
+                  {{ range $sessions }}
+                    {{ if .Exists "NowPlayingItem" }}
+                      {{ $isPlaying := not (.Bool "PlayState.IsPaused") }}
+                      {{ $mediaType := .String "NowPlayingItem.Type" }}
+                      {{ $isMovie := eq $mediaType "Movie" }}
+                      {{ $isShows := eq $mediaType "Episode" }}
+                      {{ $isMusic := eq $mediaType "Audio" }}
+                      {{ $userName := .String "UserName" }}
+                      {{ $title := .String "NowPlayingItem.Name" }}
+                      {{ $showTitle := .String "NowPlayingItem.SeriesName" }}
+                      {{ $season := .String "NowPlayingItem.ParentIndexNumber" }}
+                      {{ $episode := .String "NowPlayingItem.IndexNumber" }}
+                      {{ $thumbID := .String "NowPlayingItem.Id" }}
+                      {{ if $isShows }}{{ $thumbID = .String "NowPlayingItem.ParentId" }}{{ end }}
+                      {{ $thumbURL := concat $baseURL "/Items/" $thumbID "/Images/Primary?api_key=" $apiKey }}
+                      {{ $duration := .Float "NowPlayingItem.RunTimeTicks" }}
+                      {{ $offset := .Float "PlayState.PositionTicks" }}
+                      {{ $remainingSeconds := div (sub $duration $offset) 10000000 | toInt }}
+                      {{ $progress := mul 100 (div $offset $duration) | toInt }}
+                      {{ $now := now | formatTime "15:04:05" | parseLocalTime "15:04:05" }}
+                      {{ $endTime := $now.Add (duration (printf "%ds" $remainingSeconds)) | formatTime $timeFormat }}
+                      <div class="card gap-5">
+                        <div class="flex items-center gap-10 size-h3">
+                          <span class="color-primary">{{ $userName }}</span>
+                          <style>.pulse { height:.7rem; width:.7rem; border-radius:100%; {{ if $isPlaying }}animation:pulse 5s infinite; background:var(--color-primary);{{ else }}background:var(--color-text-base-muted);{{ end }} } @keyframes pulse { 0%{box-shadow:0 0 0 0 var(--color-text-base);} 40%{box-shadow:0 0 0 4px transparent;} 100%{box-shadow:0 0 0 4px transparent;} }</style>
+                          <div class="pulse"></div>
+                        </div>
+                        <hr class="margin-bottom-5"/>
+                        <div class="flex items-center gap-10">
+                          {{ if $showThumbnail }}
+                            <img src="{{ $thumbURL }}" loading="lazy"
+                              style="max-width:7.5rem; border:2px solid var(--color-primary); border-radius:var(--border-radius); object-fit:cover;"/>
+                          {{ end }}
+                          <ul class="flex flex-column grow justify-evenly" style="width:0;">
+                            {{ if $isShows }}
+                              <li>{{ $showTitle }}</li>
+                              <li>S{{ $season }}E{{ $episode }}</li>
+                            {{ end }}
+                            <li>{{ $title }}</li>
+                            {{ if and $isPlaying $showProgressBar }}
+                              <li>
+                                <div class="flex gap-10 items-center">
+                                  <div class="progress-container grow">
+                                    <div class="progress-bar" style="width:{{ $progress }}%;"></div>
+                                  </div>
+                                  {{ if $showProgressInfo }}<p>fin à {{ $endTime }}</p>{{ end }}
+                                </div>
+                              </li>
+                            {{ end }}
+                          </ul>
+                        </div>
+                      </div>
+                    {{ end }}
+                  {{ end }}
+                  </div>
+                {{ end }}
+              {{ else }}
+                <p class="color-negative">Impossible de contacter Jellyfin.</p>
+              {{ end }}
+
+      ##################################################
+      # COLONNE 3 - SMALL (À venir)
+      ##################################################
+
+      - size: small
+        widgets:
+
+          - type: custom-api
+            title: Sonarr — À venir
+            title-url: http://sonarr:8989
+            cache: 1h
+            options:
+              service: sonarr
+              type: upcoming
+              size: small
+              collapse-after: 5
+              interval: 14
+              api-base-url: http://sonarr:8989
+              key: 4510f0572de24348bbd533e513f6e931
+              url: http://sonarr:8989/
+            template: |
+              {{ $collapseAfter := .Options.IntOr "collapse-after" 5 }}
+              {{ $intervalH := .Options.IntOr "interval" 14 | mul 24 }}
+              {{ $now := now | formatTime "2006-01-02T15:04:05" }}
+              {{ $posInterval := (offsetNow (printf "+%dh" $intervalH)) | formatTime "2006-01-02T15:04:05" }}
+              {{ $apiBaseUrl := .Options.StringOr "api-base-url" "" }}
+              {{ $key := .Options.StringOr "key" "" }}
+              {{ $url := .Options.StringOr "url" $apiBaseUrl }}
+              {{ $requestUrl := printf "%s/api/v3/calendar?includeSeries=true&start=%s&end=%s" $apiBaseUrl $now $posInterval }}
+              {{ $data := newRequest $requestUrl | withHeader "Accept" "application/json" | withHeader "X-Api-Key" $key | getResponse }}
+              <ul class="list list-gap-14 collapsible-container" data-collapse-after="{{ $collapseAfter }}">
+                {{ $itemDisplayed := false }}
+                {{ range $data.JSON.Array "" | sortByTime "airDateUtc" "rfc3339" "asc" }}
+                  {{ $itemDisplayed = true }}
+                  {{ $coverUrl := printf "%s/api/v3/mediacover/%s/poster-500.jpg?apikey=%s" $apiBaseUrl (.String "seriesId") $key }}
+                  {{ $title := .String "series.title" }}
+                  {{ $seString := printf "S%02dE%02d" (.Int "seasonNumber") (.Int "episodeNumber") }}
+                  {{ $date := .String "airDateUtc" | parseLocalTime "RFC3339" }}
+                  {{ $date = $date.In now.Location }}
+                  <li class="flex gap-10 items-center">
+                    <img src="{{ $coverUrl }}" loading="lazy"
+                      style="width:4rem; height:6rem; object-fit:cover; border-radius:0.4rem; flex-shrink:0;">
+                    <div class="min-width-0">
+                      <strong class="size-h4 block text-truncate color-primary">{{ $title }}</strong>
+                      <div class="text-very-compact">{{ $seString }}</div>
+                      <div class="text-very-compact color-subdue">{{ $date.Format "lun 02/01 à 15:04" }}</div>
+                    </div>
+                  </li>
+                {{ end }}
+                {{ if not $itemDisplayed }}<li>Rien à venir.</li>{{ end }}
+              </ul>
+
+          - type: custom-api
+            title: Radarr — À venir
+            title-url: http://radarr:7878
+            cache: 1h
+            options:
+              api-base-url: http://radarr:7878
+              key: "${RADARR_API_KEY}"
+              interval: 60
+            template: |
+              {{ $intervalH := .Options.IntOr "interval" 60 | mul 24 }}
+              {{ $now := now | formatTime "2006-01-02T15:04:05" }}
+              {{ $posInterval := (offsetNow (printf "+%dh" $intervalH)) | formatTime "2006-01-02T15:04:05" }}
+              {{ $apiBaseUrl := .Options.StringOr "api-base-url" "" }}
+              {{ $key := .Options.StringOr "key" "" }}
+              {{ $requestUrl := printf "%s/api/v3/calendar?start=%s&end=%s" $apiBaseUrl $now $posInterval }}
+              {{ $data := newRequest $requestUrl | withHeader "Accept" "application/json" | withHeader "X-Api-Key" $key | getResponse }}
+              <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
+                {{ $itemDisplayed := false }}
+                {{ range $data.JSON.Array "" }}
+                  {{ $itemDisplayed = true }}
+                  {{ $coverUrl := printf "%s/api/v3/mediacover/%s/poster-500.jpg?apikey=%s" $apiBaseUrl (.String "id") $key }}
+                  {{ $title := .String "title" }}
+                  {{ $date := .String "releaseDate" }}
+                  <li class="flex gap-10 items-center">
+                    <img src="{{ $coverUrl }}" loading="lazy"
+                      style="width:4rem; height:6rem; object-fit:cover; border-radius:0.4rem; flex-shrink:0;">
+                    <div class="min-width-0">
+                      <strong class="size-h4 block text-truncate color-primary">{{ $title }}</strong>
+                      <div class="text-very-compact color-subdue">{{ $date }}</div>
+                    </div>
+                  </li>
+                {{ end }}
+                {{ if not $itemDisplayed }}<li>Aucun film à venir.</li>{{ end }}
+              </ul>
