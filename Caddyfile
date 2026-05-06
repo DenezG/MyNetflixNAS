@@ -26,8 +26,19 @@ docker.domaine.fr {
     reverse_proxy portainer:9000
 }
 
+
 joal.domaine.fr {
+    @joal_root path /
+    redir @joal_root /{$JOAL_UI_PATH_PREFIX}/ui/ 302
     reverse_proxy gluetun:9092
+}
+
+status.domaine.fr {
+    reverse_proxy uptime-kuma:3001
+}
+
+home.domaine.fr {
+    reverse_proxy glance:3000
 }
 
 :80 {
