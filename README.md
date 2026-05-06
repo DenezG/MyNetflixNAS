@@ -2,8 +2,12 @@
 
 Stack multimédia auto-hébergée tournant sur Ubuntu Server avec Docker.
 
-![alt text](image.png)
+<img width="934" height="776" alt="image" src="https://github.com/user-attachments/assets/38989cc2-b022-4070-a60a-e34aab30a283" />
+
+<img width="1866" height="952" alt="image" src="https://github.com/user-attachments/assets/be42f295-79cd-48d5-84f6-caf088356f8f" />
+
 ---
+
 
 ## Internet
 
@@ -20,6 +24,13 @@ Ajouter fail2ban pour empêcher le brutforce de mes applications.
 
 
 ---
+
+## Portainer et stacks
+
+Lancer depuis le server le docker-compose avec Portainer et Caddy, ensuite depuis docker.domaine.fr on peut facilement lancer les autres stacks grâce aux différents .yml etn ajoutant les fichers .env correspondants.
+
+<img width="1767" height="380" alt="image" src="https://github.com/user-attachments/assets/50bd97b3-823b-409b-a685-f8d5fcb4e9b3" />
+
 
 ## Hardware
 
