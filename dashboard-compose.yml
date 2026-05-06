@@ -1,0 +1,27 @@
+services:
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime-kuma
+    restart: unless-stopped
+    volumes:
+      - ${DOCKER_ROOT}/uptime-kuma/data:/app/data
+    networks:
+      - media
+
+  glance:
+    image: glanceapp/glance:latest
+    container_name: glance
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${DOCKER_ROOT}/glance:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - media
+
+networks:
+  media:
+    driver: bridge
+    name: media 
