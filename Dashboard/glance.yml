@@ -485,7 +485,7 @@ pages:
               collapse-after: 5
               interval: 14
               api-base-url: http://sonarr:8989
-              key: 4510f0572de24348bbd533e513f6e931
+              key: "${SONARR_API_KEY}"
               url: http://sonarr:8989/
             template: |
               {{ $collapseAfter := .Options.IntOr "collapse-after" 5 }}
